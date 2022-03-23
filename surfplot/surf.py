@@ -3,8 +3,11 @@
 NB: Code in this module is a copied subset from: 
 https://github.com/MICA-MNI/BrainSpace/blob/master/brainspace/plotting/surface_plotting.py
 
-Code has been modified (lines 30-31) just to accommodate extra orientations 
+Code has been modified (lines 37-38) just to accommodate extra orientations 
 ('anterior', 'posterior').
+
+Code has been further modified (lines 293-6) to accommodate custom colormaps
+of the matplotlib `ListedColormap` and `LinearSegmentedColormap` classes.
 """
 
 # Author: Oualid Benkarim <oualid.benkarim@mcgill.ca>
@@ -16,6 +19,10 @@ from itertools import product as iter_prod
 import matplotlib.pyplot as plt
 import numpy as np
 
+from matplotlib.colors import (
+    ListedColormap,
+    LinearSegmentedColormap
+)
 from brainspace.plotting.base import Plotter
 from brainspace.plotting.colormaps import colormaps
 import brainspace.plotting.defaults_plotting as dp
@@ -283,7 +290,11 @@ def build_plotter(surfs, layout, array_name=None, view=None, color_bar=None,
 
             cm = cmap[i, j][ia]
             if cm is not None:
-                if cm in colormaps:
+                # Patching this for use with a custom colormap.
+                if (isinstance(cm, ListedColormap) or
+                    isinstance(cm, LinearSegmentedColormap)):
+                    table = (cm.colors * 255).astype(np.uint8)
+                elif cm in colormaps:
                     table = colormaps[cm]
                 else:
                     cm = plt.get_cmap(cm)
